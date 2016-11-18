@@ -220,3 +220,21 @@
 
 ;; javascript-mode
 (add-hook 'javascript-mode 'electric-pair-mode)
+
+(el-get-bundle slime-company)
+(el-get-bundle slime)
+
+(require 'slime)
+(setq slime-contribs '(slime-repl slime-fancy slime-banner slime-company))
+(setf slime-lisp-implementations
+      `((ccl64    ("wx86cl64"))
+        (sbcl    ("sbcl" "--dynamic-space-size" "2000"))
+        (roswell ("ros" "dynamic-space-size=2000" "-Q" "-l" "~/.sbclrc" "run"))))
+(setf slime-default-lisp 'ccl64)
+;; Stop SLIME's REPL from grabbing DEL,
+;; which is annoying when backspacing over a '('
+(defun override-slime-repl-bindings-with-paredit ()
+  (define-key slime-repl-mode-map
+    (read-kbd-macro paredit-backward-delete-key) nil))
+(add-hook 'slime-repl-mode-hook 'override-slime-repl-bindings-with-paredit)
+(add-hook 'slime-repl-mode-hook 'enable-paredit-mode)
