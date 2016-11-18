@@ -3,3 +3,9 @@
 
 # Packaging
 .cask
+el-get/
+elpa/
+
+# Others
+ido.last
+backup/
