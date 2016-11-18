@@ -212,3 +212,11 @@
 
 
 (el-get-bundle glsl-mode)
+
+(el-get-bundle web-mode
+  (add-to-list 'auto-mode-alist '("\\.html" . web-mode))
+  (with-eval-after-load-feature 'web-mode
+    (add-hook 'web-mode-hook 'electric-pair-mode)))
+
+;; javascript-mode
+(add-hook 'javascript-mode 'electric-pair-mode)
