@@ -238,3 +238,10 @@
     (read-kbd-macro paredit-backward-delete-key) nil))
 (add-hook 'slime-repl-mode-hook 'override-slime-repl-bindings-with-paredit)
 (add-hook 'slime-repl-mode-hook 'enable-paredit-mode)
+
+
+(el-get-bundle undo-tree
+  (require 'undo-tree)
+  (global-undo-tree-mode t)
+  (global-set-key (kbd "M-/") 'undo-tree-redo))
+
