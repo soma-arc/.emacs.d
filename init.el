@@ -22,14 +22,11 @@
 (setq ring-bell-function 'ignore)
 
 (setq create-lockfiles nil)
-(let ((target-dir (expand-file-name "~/"))
-      (dest-dir (expand-file-name "~/.emacs.d/backup")))
-  (add-to-list 'auto-save-file-name-transforms
-               `(,(concat target-dir "\\([^/]*/\\)*\\([^/]*\\)$")
-                 ,(concat dest-dir "\\2")
-                 t))
-  (add-to-list 'backup-directory-alist (cons ".*" dest-dir))
-  (setq auto-save-list-file-prefix (expand-file-name ".saves-" dest-dir)))
+(setq backup-directory-alist
+  (cons (cons ".*" (expand-file-name "~/.emacs.d/backup"))
+        backup-directory-alist))
+(setq auto-save-file-name-transforms
+  `((".*", (expand-file-name "~/.emacs.d/backup/") t)))
 
 (el-get-bundle tarao/with-eval-after-load-feature-el)
 
@@ -244,4 +241,3 @@
   (require 'undo-tree)
   (global-undo-tree-mode t)
   (global-set-key (kbd "M-/") 'undo-tree-redo))
-
