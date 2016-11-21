@@ -227,7 +227,7 @@
       `((ccl64    ("wx86cl64"))
         (sbcl    ("sbcl" "--dynamic-space-size" "2000"))
         (roswell ("ros" "dynamic-space-size=2000" "-Q" "-l" "~/.sbclrc" "run"))))
-(setf slime-default-lisp 'ccl64)
+(setf slime-default-lisp 'roswell)
 ;; Stop SLIME's REPL from grabbing DEL,
 ;; which is annoying when backspacing over a '('
 (defun override-slime-repl-bindings-with-paredit ()
@@ -241,3 +241,9 @@
   (require 'undo-tree)
   (global-undo-tree-mode t)
   (global-set-key (kbd "M-/") 'undo-tree-redo))
+
+(el-get-bundle yatex
+  (autoload 'yatex-mode "yatex" "Yet Another LaTeX mode" t)
+  (add-to-list 'auto-mode-alist '("\\.tex" . yatex-mode))
+  (setq tex-command "platex")
+  (setq dviprint-command-format "dvipdfmx %s "))
