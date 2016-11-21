@@ -9,3 +9,5 @@ elpa/
 # Others
 ido.last
 backup/
+server/
+auto-save-list/
