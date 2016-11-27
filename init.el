@@ -232,18 +232,18 @@
 (setq-default c-basic-offset 4)
 (setq-default intent-tabs-mode nil)
 
-(el-get-bundle cider
-  (autoload 'cider "cider" nil t)
-  (add-hook 'cider-mode-hook  'enable-paredit-mode)
-  (add-hook 'cider-repl-mode-hook  'enable-paredit-mode)
-  (with-eval-after-load-feature 'cider
-      (setq nrepl-log-messages t
-            cider-repl-display-in-current-window t
-            cider-repl-use-clojure-font-lock t
-            cider-prompt-save-file-on-load 'always-save
-            cider-font-lock-dynamically '(macro core function var)
-            cider-overlays-use-font-lock t)
-    (cider-repl-toggle-pretty-printing)))
+;; (el-get-bundle cider
+;;   (autoload 'cider "cider" nil t)
+;;   (add-hook 'cider-mode-hook  'enable-paredit-mode)
+;;   (add-hook 'cider-repl-mode-hook  'enable-paredit-mode)
+;;   (with-eval-after-load-feature 'cider
+;;       (setq nrepl-log-messages t
+;;             cider-repl-display-in-current-window t
+;;             cider-repl-use-clojure-font-lock t
+;;             cider-prompt-save-file-on-load 'always-save
+;;             cider-font-lock-dynamically '(macro core function var)
+;;             cider-overlays-use-font-lock t)
+;;     (cider-repl-toggle-pretty-printing)))
 
 (el-get-bundle markdown-mode
   (add-to-list 'auto-mode-alist '("\\.md\\'" . gfm-mode)
@@ -300,6 +300,20 @@
 (require 'magit)
 (global-set-key (kbd "C-x g") 'magit-status)
 
+(unless (require 'cider nil 'noerror)
+  (package-install 'cider))
+(autoload 'cider "cider" nil t)
+(add-hook 'cider-mode-hook  'enable-paredit-mode)
+(add-hook 'cider-repl-mode-hook  'enable-paredit-mode)
+(setq nrepl-log-messages t
+      cider-repl-display-in-current-window t
+      cider-repl-use-clojure-font-lock t
+      cider-prompt-save-file-on-load 'always-save
+      cider-font-lock-dynamically '(macro core function var)
+      cider-overlays-use-font-lock t)
+(cider-repl-toggle-pretty-printing)
+
 (unless (require 'clj-refactor nil 'noerror)
   (package-install 'clj-refactor))
 (add-hook 'cider-mode-hook 'clj-refactor-mode)
+
