@@ -245,6 +245,13 @@
             cider-overlays-use-font-lock t)
     (cider-repl-toggle-pretty-printing)))
 
+(el-get-bundle markdown-mode
+  (add-to-list 'auto-mode-alist '("\\.md\\'" . gfm-mode)
+  (with-eval-after-load-feature 'markdown-mode
+    (autoload 'markdown-mode "markdown-mode" "Major mode for editing Markdown files" t)
+    (autoload 'gfm-mode "gfm-mode" "Major mode for editing GitHub Flavored Markdown files" t)
+    (setq markdown-command "pandoc -f markdown_github -t html5 --mathjax"))))
+
 
 (require 'package)
 (add-to-list 'package-archives
