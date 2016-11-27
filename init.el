@@ -9,15 +9,9 @@
     (goto-char (point-max))
     (eval-print-last-sexp)))
 
-(require 'package)
-(add-to-list 'package-archives
-             '("melpa" . "https://melpa.org/packages/") t)
-(add-to-list 'package-archives
-             '("melpa-stable" . "https://stable.melpa.org/packages/") t)
-(package-initialize)
-
 (menu-bar-mode -1)
 (tool-bar-mode -1)
+(blink-cursor-mode -1)
 
 (setq ring-bell-function 'ignore)
 
@@ -140,7 +134,8 @@
 ;; company-quickhelp and its dependency
 (el-get-bundle pos-tip)
 (el-get-bundle company-quickhelp
-  (company-quickhelp-mode 1))
+  (with-eval-after-load-feature 'company
+    (company-quickhelp-mode 1)))
 
 
 (el-get-bundle rainbow-delimiters
@@ -156,24 +151,6 @@
        (cl-callf color-saturate-name (face-foreground face) 30))))
   (add-hook 'emacs-startup-hook 'rainbow-delimiters-using-stronger-colors))
 
-;; (el-get-bundle async)
-;; (el-get-bundle dash)
-;; (el-get-bundle magit
-;;   (require 'magit)
-;;   (global-set-key (kbd "C-x g") 'magit-status))
-
-;; (setq package-pinned-packages
-;;       '((magit . "melpa-stable")
-;;         (dash . "melpa-stable")
-;;         (with-editor . "melpa-stable")
-;;         (git-commit . "melpa-stable")))
-(unless (require 'magit nil 'noerror)
-  (package-install 'dash)
-  (package-install 'with-editor)
-  (package-install 'git-commit)
-  (package-install 'magit))
-(require 'magit)
-(global-set-key (kbd "C-x g") 'magit-status)
 
 (el-get-bundle anzu
   (require 'anzu)
@@ -208,9 +185,11 @@
   (setq ido-vertical-define-keys 'C-n-and-C-p-only))
 
 
-(el-get-bundle glsl-mode)
+(el-get-bundle glsl-mode
+  (autoload 'glsl-mode "glsl-mode" nil t))
 
 (el-get-bundle web-mode
+  (autoload 'web-mode "web-mode" nil t)
   (add-to-list 'auto-mode-alist '("\\.html" . web-mode))
   (with-eval-after-load-feature 'web-mode
     (add-hook 'web-mode-hook 'electric-pair-mode)))
@@ -245,5 +224,54 @@
 (el-get-bundle yatex
   (autoload 'yatex-mode "yatex" "Yet Another LaTeX mode" t)
   (add-to-list 'auto-mode-alist '("\\.tex" . yatex-mode))
-  (setq tex-command "platex")
-  (setq dviprint-command-format "dvipdfmx %s "))
+  (with-eval-after-load 'yatex-mode
+    (setq-default tex-command "platex")
+    (setq-default dviprint-command-format "dvipdfmx %s ")))
+
+(setq-default buffer-file-coding-system 'utf-8-unix)
+(setq-default c-basic-offset 4)
+(setq-default intent-tabs-mode nil)
+
+(el-get-bundle cider
+  (autoload 'cider "cider" nil t)
+  (add-hook 'cider-mode-hook  'enable-paredit-mode)
+  (add-hook 'cider-repl-mode-hook  'enable-paredit-mode)
+  (with-eval-after-load-feature 'cider
+      (setq nrepl-log-messages t
+            cider-repl-display-in-current-window t
+            cider-repl-use-clojure-font-lock t
+            cider-prompt-save-file-on-load 'always-save
+            cider-font-lock-dynamically '(macro core function var)
+            cider-overlays-use-font-lock t)
+    (cider-repl-toggle-pretty-printing)))
+
+
+(require 'package)
+(add-to-list 'package-archives
+             '("melpa" . "https://melpa.org/packages/") t)
+(add-to-list 'package-archives
+             '("melpa-stable" . "https://stable.melpa.org/packages/") t)
+(package-initialize)
+
+;; (el-get-bundle async)
+;; (el-get-bundle dash)
+;; (el-get-bundle magit
+;;   (require 'magit)
+;;   (global-set-key (kbd "C-x g") 'magit-status))
+
+;; (setq package-pinned-packages
+;;       '((magit . "melpa-stable")
+;;         (dash . "melpa-stable")
+;;         (with-editor . "melpa-stable")
+;;         (git-commit . "melpa-stable")))
+(unless (require 'magit nil 'noerror)
+  (package-install 'dash)
+  (package-install 'with-editor)
+  (package-install 'git-commit)
+  (package-install 'magit))
+(require 'magit)
+(global-set-key (kbd "C-x g") 'magit-status)
+
+(unless (require 'clj-refactor nil 'noerror)
+  (package-install 'clj-refactor))
+(add-hook 'cider-mode-hook 'clj-refactor-mode)
