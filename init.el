@@ -253,6 +253,27 @@
     (setq markdown-command "pandoc -f markdown_github -t html5 --mathjax"))))
 
 
+(el-get-bundle ddskk
+  (require 'skk)
+  (require 'skk-study)
+  (setq default-input-method "japanese-skk")
+  (global-set-key (kbd "C-x j") 'skk-auto-fill-mode)
+  (setq skk-henkan-strict-okuri-precedence t)
+  (setq skk-check-okurigana-on-touroku t)
+  (setq skk-show-inline nil)
+  (setq skk-show-tooltip nil)
+  (setq skk-show-candidates-always-pop-to-buffer t)
+  (setq skk-show-annotation t)
+  (setq skk-annotation-delay 0.5)
+  (setq skk-dcomp-activate t)
+  (setq skk-henkan-show-candidates-rows 2)
+  (setq skk-dcomp-multiple-activate t)
+  (setq skk-dcomp-multiple-rows 10)
+  (setq skk-show-japanese-menu nil)
+  (setq skk-japanese-message-and-error nil)
+  (setq skk-large-jisyo "/usr/share/skk/SKK-JISYO.L"))
+(set-fontset-font t 'japanese-jisx0208 (font-spec :family "MeiryoKe_Console"))
+
 (require 'package)
 (add-to-list 'package-archives
              '("melpa" . "https://melpa.org/packages/") t)
