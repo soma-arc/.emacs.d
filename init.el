@@ -232,6 +232,11 @@
 (setq-default c-basic-offset 4)
 (setq-default intent-tabs-mode nil)
 
+(autoload 'c++ "c++-mode" nil t)
+(add-hook 'c++-mode-hook 'subword-mode)
+(add-hook 'c++-mode-hook 'electric-pair-mode)
+(setq company-clang-executable "clang-3.5")
+
 ;; (el-get-bundle cider
 ;;   (autoload 'cider "cider" nil t)
 ;;   (add-hook 'cider-mode-hook  'enable-paredit-mode)
