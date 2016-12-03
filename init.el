@@ -131,12 +131,25 @@
 
   (global-set-key (kbd "TAB") 'tab-indent-or-complete))
 
+(setq company-dabbrev-downcase nil)
+
+(el-get-bundle company-statistics
+  (require 'company-statistics)
+  (add-hook 'after-init-hook 'company-statistics-mode)
+  (setq company-transformers '(company-sort-by-statistics company-sort-by-backend-importance)))
+
 ;; company-quickhelp and its dependency
 (el-get-bundle pos-tip)
-(el-get-bundle company-quickhelp
-  (with-eval-after-load-feature 'company
-    (company-quickhelp-mode 1)))
 
+(el-get-bundle company-quickhelp
+  (require 'pos-tip)
+  (setq pos-tip-foreground-color "white")
+  (setq pos-tip-background-color "steelblue")
+  (with-eval-after-load-feature 'company
+    (company-quickhelp-mode 1))
+  (with-eval-after-load-feature 'company-quickhelp
+    (setq company-quickhelp-delay 0.5)
+    (setq company-quickhelp-max-lines 10)))
 
 (el-get-bundle rainbow-delimiters
   (require 'rainbow-delimiters)
