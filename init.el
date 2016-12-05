@@ -231,6 +231,14 @@
 (setq-default buffer-file-coding-system 'utf-8-unix)
 (setq-default c-basic-offset 4)
 (setq-default intent-tabs-mode nil)
+(setq-default tab-width 4)
+
+(add-hook 'c++-mode-hook
+          '(lambda()
+             (c-set-style "stroustrup")
+             (c-set-offset 'innamespace 0)
+             (c-set-offset 'arglist-close 0)
+             ))
 
 (autoload 'c++ "c++-mode" nil t)
 (add-hook 'c++-mode-hook 'subword-mode)
