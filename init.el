@@ -244,6 +244,24 @@
 (setq-default buffer-file-coding-system 'utf-8-unix)
 (setq-default c-basic-offset 4)
 (setq-default intent-tabs-mode nil)
+(setq-default tab-width 4)
+
+(add-hook 'c++-mode-hook
+          '(lambda()
+             (c-set-style "stroustrup")
+             (c-set-offset 'innamespace 0)
+             (c-set-offset 'arglist-close 0)
+             ))
+
+(autoload 'c++ "c++-mode" nil t)
+(add-hook 'c++-mode-hook 'subword-mode)
+(add-hook 'c++-mode-hook 'electric-pair-mode)
+(setq company-clang-executable "clang-3.5")
+
+
+(el-get-bundle opencl-mode
+  (autoload 'opencl-mode "opencl-mode" nil t)
+  (add-to-list 'auto-mode-alist '("\\.cl\\'" . opencl-mode)))
 
 ;; (el-get-bundle cider
 ;;   (autoload 'cider "cider" nil t)
