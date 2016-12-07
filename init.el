@@ -129,7 +129,20 @@
 
   (setq company-selection-wrap-around t)
 
-  (global-set-key (kbd "TAB") 'tab-indent-or-complete))
+  (global-set-key (kbd "TAB") 'tab-indent-or-complete)
+  (setq company-backends
+        '(company-bbdb
+          company-nxml
+          company-css
+          company-eclim
+          company-semantic
+                                        ;        company-clang
+          company-xcode
+          company-cmake
+          company-capf
+          (company-dabbrev-code company-gtags company-etags company-keywords)
+          company-oddmuse company-files company-dabbrev)
+        ))
 
 (setq company-dabbrev-downcase nil)
 
@@ -367,8 +380,6 @@
   (let ((fill-column (point-max)))
     (fill-region beg end)))
 
-
-
 ;; color http://www.clear-code.com/blog/2012/4/3.html
 (defun diff-mode-setup-faces ()
   (set-face-attribute 'diff-added nil
@@ -384,4 +395,5 @@
 (add-hook 'diff-mode-hook 'diff-mode-refine-automatically)
 
 (setq magit-diff-refine-hunk 'all)
-(set-face-attribute 'magit-item-highlight nil :inherit nil)
+
+
