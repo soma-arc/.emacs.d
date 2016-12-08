@@ -221,7 +221,8 @@
     (add-hook 'web-mode-hook 'electric-pair-mode)))
 
 ;; javascript-mode
-(add-hook 'javascript-mode 'electric-pair-mode)
+(add-hook 'js-mode-hook 'electric-pair-mode)
+(add-hook 'js-mode-hook 'subword-mode)
 
 (el-get-bundle slime-company)
 (el-get-bundle slime)
