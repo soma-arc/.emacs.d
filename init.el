@@ -316,7 +316,12 @@
   (setq skk-dcomp-multiple-rows 10)
   (setq skk-show-japanese-menu nil)
   (setq skk-japanese-message-and-error nil)
-  (setq skk-large-jisyo "/usr/share/skk/SKK-JISYO.L"))
+  (setq skk-large-jisyo "/usr/share/skk/SKK-JISYO.L")
+  (setq skk-tut-file "~/.emacs.d/el-get/ddskk/etc/SKK.tut")
+  (setq skk-kuten-touten-alist
+        (cons '(my-en ". " . ", ")
+              skk-kuten-touten-alist))
+  (setq-default skk-kutouten-type 'my-en))
 (set-fontset-font t 'japanese-jisx0208 (font-spec :family "MeiryoKe_Console"))
 
 (require 'package)
