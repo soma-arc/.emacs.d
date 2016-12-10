@@ -362,6 +362,10 @@
       cider-font-lock-dynamically '(macro core function var)
       cider-overlays-use-font-lock t)
 (cider-repl-toggle-pretty-printing)
+(setq cider-cljs-lein-repl
+      "(do (require 'figwheel-sidecar.repl-api)
+           (figwheel-sidecar.repl-api/start-figwheel!)
+           (figwheel-sidecar.repl-api/cljs-repl))")
 
 (unless (require 'clj-refactor nil 'noerror)
   (package-install 'clj-refactor))
