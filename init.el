@@ -266,6 +266,11 @@
              (c-set-offset 'innamespace 0)
              (c-set-offset 'arglist-close 0)
              ))
+(add-hook 'opencl-mode-hook
+          '(lambda ()
+             (c-set-style "stroustrup")
+             (c-set-offset 'innamespace 0)
+             (c-set-offset 'arglist-close 0)))
 
 (autoload 'c++ "c++-mode" nil t)
 (add-hook 'c++-mode-hook 'subword-mode)
