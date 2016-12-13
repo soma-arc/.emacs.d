@@ -73,6 +73,7 @@
 (el-get-bundle company
   (require 'company)
   (global-company-mode +1)
+  (setq company-dabbrev-downcase nil)
 
   (set-face-attribute 'company-tooltip nil
 		      :foreground "black" :background "lightgrey")
