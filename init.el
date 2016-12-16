@@ -283,19 +283,6 @@
   (autoload 'opencl-mode "opencl-mode" nil t)
   (add-to-list 'auto-mode-alist '("\\.cl\\'" . opencl-mode)))
 
-;; (el-get-bundle cider
-;;   (autoload 'cider "cider" nil t)
-;;   (add-hook 'cider-mode-hook  'enable-paredit-mode)
-;;   (add-hook 'cider-repl-mode-hook  'enable-paredit-mode)
-;;   (with-eval-after-load-feature 'cider
-;;       (setq nrepl-log-messages t
-;;             cider-repl-display-in-current-window t
-;;             cider-repl-use-clojure-font-lock t
-;;             cider-prompt-save-file-on-load 'always-save
-;;             cider-font-lock-dynamically '(macro core function var)
-;;             cider-overlays-use-font-lock t)
-;;     (cider-repl-toggle-pretty-printing)))
-
 (el-get-bundle markdown-mode
   (add-to-list 'auto-mode-alist '("\\.md\\'" . gfm-mode)
   (with-eval-after-load-feature 'markdown-mode
@@ -330,6 +317,9 @@
   (setq-default skk-kutouten-type 'my-en))
 (set-fontset-font t 'japanese-jisx0208 (font-spec :family "MeiryoKe_Console"))
 
+;; ------------------
+;; package
+
 (require 'package)
 (add-to-list 'package-archives
              '("melpa" . "https://melpa.org/packages/") t)
@@ -337,17 +327,6 @@
              '("melpa-stable" . "https://stable.melpa.org/packages/") t)
 (package-initialize)
 
-;; (el-get-bundle async)
-;; (el-get-bundle dash)
-;; (el-get-bundle magit
-;;   (require 'magit)
-;;   (global-set-key (kbd "C-x g") 'magit-status))
-
-;; (setq package-pinned-packages
-;;       '((magit . "melpa-stable")
-;;         (dash . "melpa-stable")
-;;         (with-editor . "melpa-stable")
-;;         (git-commit . "melpa-stable")))
 (unless (require 'magit nil 'noerror)
   (package-install 'dash)
   (package-install 'with-editor)
