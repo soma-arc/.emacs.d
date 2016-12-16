@@ -277,7 +277,7 @@
 (add-hook 'c++-mode-hook 'subword-mode)
 (add-hook 'c++-mode-hook 'electric-pair-mode)
 (setq company-clang-executable "clang-3.5")
-
+(add-to-list 'auto-mode-alist '("\\.h\\'" . c++-mode))
 
 (el-get-bundle opencl-mode
   (autoload 'opencl-mode "opencl-mode" nil t)
