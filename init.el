@@ -72,9 +72,9 @@
 
 (el-get-bundle company
   (require 'company)
+  (require 'company-dabbrev)
   (global-company-mode +1)
   (setq company-dabbrev-downcase nil)
-
   (set-face-attribute 'company-tooltip nil
 		      :foreground "black" :background "lightgrey")
   (set-face-attribute 'company-tooltip-common nil
@@ -145,7 +145,7 @@
           company-oddmuse company-files company-dabbrev)
         ))
 
-(setq company-dabbrev-downcase nil)
+
 
 (el-get-bundle company-statistics
   (require 'company-statistics)
