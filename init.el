@@ -249,12 +249,30 @@
   (global-undo-tree-mode t)
   (global-set-key (kbd "M-/") 'undo-tree-redo))
 
+(el-get-bundle latex-math-preview
+  (require 'latex-math-preview)
+  (setq-default latex-math-preview-in-math-mode-p-func 'YaTeX-in-math-mode-p))
+
 (el-get-bundle yatex
   (autoload 'yatex-mode "yatex" "Yet Another LaTeX mode" t)
   (add-to-list 'auto-mode-alist '("\\.tex" . yatex-mode))
   (with-eval-after-load 'yatex-mode
     (setq-default tex-command "platex")
-    (setq-default dviprint-command-format "dvipdfmx %s ")))
+    (setq-default dviprint-command-format "dvipdfmx %s ")
+    (setq-default dvi2-command "evince")
+    (setq-default tex-pdfview-command "evince")
+    (YaTeX-define-key "p" 'latex-math-preview-expression)
+    (YaTeX-define-key "\C-p" 'latex-math-preview-save-image-file)
+    (YaTeX-define-key "j" 'latex-math-preview-insert-symbol)
+    (YaTeX-define-key "\C-j" 'latex-math-preview-last-symbol-again)
+    (YaTeX-define-key "\C-b" 'latex-math-preview-beamer-frame)))
+
+(el-get-bundle popwin
+  (require 'popwin)
+  (setq popwin-mode 1)
+;;  (require 'popwin-yatex)
+  (push '("*YaTeX-typesetting*") popwin:special-display-config)
+  (push '("*latex-math-preview-expression*") popwin:special-display-config))
 
 (setq-default buffer-file-coding-system 'utf-8-unix)
 (setq-default c-basic-offset 4)
