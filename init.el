@@ -74,7 +74,9 @@
   (require 'company)
   (require 'company-dabbrev)
   (global-company-mode +1)
-  (setq company-dabbrev-downcase nil)
+  (setq-default company-dabbrev-downcase nil)
+  ;;https://github.com/company-mode/company-mode/issues/413
+  (setq-default company-dabbrev-ignore-case nil)
   (set-face-attribute 'company-tooltip nil
 		      :foreground "black" :background "lightgrey")
   (set-face-attribute 'company-tooltip-common nil
