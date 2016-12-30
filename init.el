@@ -330,6 +330,7 @@
   (setq skk-dcomp-multiple-rows 10)
   (setq skk-show-japanese-menu nil)
   (setq skk-japanese-message-and-error nil)
+  (setq YaTeX-kanji-code nil)
   (setq skk-large-jisyo "/usr/share/skk/SKK-JISYO.L")
   (setq skk-tut-file "~/.emacs.d/el-get/ddskk/etc/SKK.tut")
   (setq skk-kuten-touten-alist
