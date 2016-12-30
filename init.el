@@ -268,15 +268,16 @@
     (YaTeX-define-key "j" 'latex-math-preview-insert-symbol)
     (YaTeX-define-key "\C-j" 'latex-math-preview-last-symbol-again)
     (YaTeX-define-key "\C-b" 'latex-math-preview-beamer-frame)))
-
 (el-get-bundle popwin
   (require 'popwin)
-  (setq popwin-mode 1)
-;;  (require 'popwin-yatex)
+  (setq-default popwin-mode t)
   (push '("*YaTeX-typesetting*") popwin:special-display-config)
-  (push '("*latex-math-preview-expression*") popwin:special-display-config))
+  (push '("*latex-math-preview-expression*") popwin:special-display-config)
+  (push '("*dvi-preview*") popwin:special-display-config))
+
 
 (setq-default buffer-file-coding-system 'utf-8-unix)
+(setq-default default-file-name-coding-system 'utf-8-unix)
 (setq-default c-basic-offset 4)
 (setq-default intent-tabs-mode nil)
 (setq-default tab-width 4)
@@ -411,4 +412,6 @@
 
 (setq magit-diff-refine-hunk 'all)
 
+
+(require 'popwin-yatex)
 
