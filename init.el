@@ -413,6 +413,12 @@
 
 (setq magit-diff-refine-hunk 'all)
 
+(unless (require 'graphviz-dot-mode nil 'noerror)
+  (package-install 'graphviz-dot-mode))
+
+(require 'graphviz-dot-mode)
+(add-to-list 'auto-mode-alist '("\\.dot" . graphviz-dot-mode))
+(add-hook 'graphviz-dot-mode-hook (lambda () (local-set-key [f5] "\C-x\C-s\C-cc\C-m\C-cp")))
 
 (require 'popwin-yatex)
 
