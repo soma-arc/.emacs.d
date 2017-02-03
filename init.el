@@ -268,6 +268,11 @@
     (YaTeX-define-key "j" 'latex-math-preview-insert-symbol)
     (YaTeX-define-key "\C-j" 'latex-math-preview-last-symbol-again)
     (YaTeX-define-key "\C-b" 'latex-math-preview-beamer-frame)))
+
+(add-hook 'yatex-mode-hook
+          '(lambda ()
+             (skk-auto-fill-activate)))
+
 (el-get-bundle popwin
   (require 'popwin)
   (setq-default popwin-mode t)
