@@ -259,7 +259,9 @@
   (autoload 'yatex-mode "yatex" "Yet Another LaTeX mode" t)
   (add-to-list 'auto-mode-alist '("\\.tex" . yatex-mode))
   (with-eval-after-load 'yatex-mode
-    (setq-default tex-command "platex")
+    (setq-default tex-command "uplatex")
+    (add-hook 'yatex-mode-hook 'turn-on-reftex)
+    (setq-default bibtex-command "biber --bblencoding=utf8 -u -U --output_safechars")
     (setq-default dviprint-command-format "dvipdfmx %s ")
     (setq-default dvi2-command "evince")
     (setq-default tex-pdfview-command "evince")
@@ -276,6 +278,7 @@
 (el-get-bundle popwin
   (require 'popwin)
   (setq-default popwin-mode t)
+  (push '("*YaTeX-bibtex*") popwin:special-display-config)
   (push '("*YaTeX-typesetting*") popwin:special-display-config)
   (push '("*latex-math-preview-expression*") popwin:special-display-config)
   (push '("*dvi-preview*") popwin:special-display-config))
