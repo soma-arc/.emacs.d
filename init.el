@@ -259,9 +259,8 @@
   (autoload 'yatex-mode "yatex" "Yet Another LaTeX mode" t)
   (add-to-list 'auto-mode-alist '("\\.tex" . yatex-mode))
   (with-eval-after-load 'yatex-mode
-    (setq-default tex-command "uplatex")
+    (setq tex-command "uplatex")
     (add-hook 'yatex-mode-hook 'turn-on-reftex)
-    (setq-default bibtex-command "biber --bblencoding=utf8 -u -U --output_safechars")
     (setq-default dviprint-command-format "dvipdfmx %s ")
     (setq-default dvi2-command "evince")
     (setq-default tex-pdfview-command "evince")
@@ -270,6 +269,8 @@
     (YaTeX-define-key "j" 'latex-math-preview-insert-symbol)
     (YaTeX-define-key "\C-j" 'latex-math-preview-last-symbol-again)
     (YaTeX-define-key "\C-b" 'latex-math-preview-beamer-frame)))
+(setq bibtex-command "biber --bblencoding=utf8 -u -U --output_safechars")
+
 
 (add-hook 'yatex-mode-hook
           '(lambda ()
