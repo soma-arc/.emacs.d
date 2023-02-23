@@ -1,176 +1,273 @@
-(when load-file-name
-  (setq user-emacs-directory (file-name-directory load-file-name)))
+;;; init.el --- My init.el  -*- lexical-binding: t; -*-
 
-(add-to-list 'load-path (locate-user-emacs-file "el-get/el-get"))
-(unless (require 'el-get nil 'noerror)
-  (with-current-buffer
-      (url-retrieve-synchronously
-       "https://raw.githubusercontent.com/dimitri/el-get/master/el-get-install.el")
-    (goto-char (point-max))
-    (eval-print-last-sexp)))
+;;; Commentary:
 
-(menu-bar-mode -1)
-(tool-bar-mode -1)
-(blink-cursor-mode -1)
+;; byte compile command:emacs -Q --batch -f batch-byte-compile init.el
 
-(setq ring-bell-function 'ignore)
+;;; Code:
 
-(setq create-lockfiles nil)
-(setq backup-directory-alist
-  (cons (cons ".*" (expand-file-name "~/.emacs.d/backup"))
-        backup-directory-alist))
-(setq auto-save-file-name-transforms
-  `((".*", (expand-file-name "~/.emacs.d/backup/") t)))
+(eval-and-compile
+  (when (or load-file-name byte-compile-current-file)
+    (setq user-emacs-directory
+          (expand-file-name
+           (file-name-directory (or load-file-name byte-compile-current-file))))))
 
-(el-get-bundle tarao/with-eval-after-load-feature-el)
+(eval-and-compile
+  (customize-set-variable
+   'package-archives '(("org"   . "https://orgmode.org/elpa/")
+                       ("melpa" . "https://melpa.org/packages/")
+                       ("gnu"   . "https://elpa.gnu.org/packages/")))
+  (package-initialize)
+  (unless (package-installed-p 'leaf)
+    (package-refresh-contents)
+    (package-install 'leaf))
 
-(el-get-bundle twilight-anti-bright-theme
-  (require 'twilight-anti-bright-theme))
+  (leaf leaf-keywords
+    :ensure t
+    :init
+    ;; optional packages if you want to use :hydra, :el-get, :blackout,,,
+    (leaf hydra :ensure t)
+    (leaf el-get :ensure t)
+    (leaf blackout :ensure t)
 
-(show-paren-mode 1)
-(setq show-paren-delay 0)
-(setq show-paren-style 'expression)
+    :config
+    ;; initialize leaf-keywords.el
+    (leaf-keywords-init)))
 
-;;@ key bind
-(define-key key-translation-map (kbd "C-h") (kbd "<DEL>"))
-(global-set-key (kbd "C-c <left>") 'windmove-left)
-(global-set-key (kbd "C-c <down>") 'windmove-down)
-(global-set-key (kbd "C-c <up>") 'windmove-up)
-(global-set-key (kbd "C-c <right>") 'windmove-right)
+(leaf twilight-anti-bright-theme
+  :doc "A soothing Emacs 24 light-on-dark theme"
+  :tag "themes"
+  :url "https://github.com/jimeh/twilight-anti-bright-theme.el"
+  :added "2022-02-11"
+  :ensure t
+  :config
+  (load-theme 'twilight-anti-bright t))
 
-(global-set-key (kbd "C-c b") 'windmove-left)
-(global-set-key (kbd "C-c n") 'windmove-down)
-(global-set-key (kbd "C-c p") 'windmove-up)
-(global-set-key (kbd "C-c f") 'windmove-right)
+(leaf leaf
+  :custom ((ring-bell-function . 'ignore)
+           (create-lockfiles . nil)
+           (indent-tabs-mode . nil))
+  :config
+  (menu-bar-mode -1)
+  (tool-bar-mode -1)
+  (blink-cursor-mode -1)
+  (setq backup-directory-alist
+        (cons (cons ".*" (expand-file-name "~/.emacs.d/backup"))
+              backup-directory-alist))
+  (setq auto-save-file-name-transforms
+        `((".*", (expand-file-name "~/.emacs.d/backup/") t)))
+  (define-key key-translation-map (kbd "C-h") (kbd "<DEL>"))
+  (global-set-key (kbd "C-c <left>") 'windmove-left)
+  (global-set-key (kbd "C-c <down>") 'windmove-down)
+  (global-set-key (kbd "C-c <up>") 'windmove-up)
+  (global-set-key (kbd "C-c <right>") 'windmove-right)
+  (global-set-key (kbd "C-c b") 'windmove-left)
+  (global-set-key (kbd "C-c n") 'windmove-down)
+  (global-set-key (kbd "C-c p") 'windmove-up)
+  (global-set-key (kbd "C-c f") 'windmove-right)
+  (set-fontset-font t 'japanese-jisx0208 (font-spec :family "MeiryoKe_Console"))
+  ;;; Stefan Monnier <foo at acm.org>. It is the opposite of fill-paragraph
+  ;;; https://www.emacswiki.org/emacs/UnfillParagraph
+  (defun unfill-paragraph (&optional region)
+    "Takes a multi-line paragraph and makes it into a single line of text."
+    (interactive (progn (barf-if-buffer-read-only) '(t)))
+    (let ((fill-column (point-max))
+          ;; This would override `fill-column' if it's an integer.
+          (emacs-lisp-docstring-fill-column t))
+      (fill-paragraph nil region)))
+  ;;; https://www.emacswiki.org/emacs/UnfillRegion
+  (defun unfill-region (beg end)
+    "Unfill the region, joining text paragraphs into a single
+    logical line.  This is useful, e.g., for use with
+    `visual-line-mode'."
+    (interactive "*r")
+    (let ((fill-column (point-max)))
+      (fill-region beg end)))
+  (leaf leaf-convert :ensure t)
+  (leaf leaf-tree
+    :ensure t
+    :custom ((imenu-list-size . 30)
+             (imenu-list-position . 'left))))
 
-(require 'linum)
-(global-linum-mode 1)
-(setq linum-format "%4d ")
-(global-set-key (kbd "C-c l") 'goto-line)
+(leaf macrostep
+  :ensure t
+  :bind (("C-c e" . macrostep-expand)))
 
-(setq-default indent-tabs-mode nil)
+(leaf linum
+  :ensure t
+  :custom
+  (linum-format . "%4d ")
+  :config
+  (global-linum-mode 1))
 
-;;paredit
-(el-get-bundle paredit
-  (add-hook 'emacs-lisp-mode-hook       'enable-paredit-mode)
-  (add-hook 'eval-expression-minibuffer-setup-hook 'enable-paredit-mode)
-  (add-hook 'lisp-mode-hook             'enable-paredit-mode)
-  (add-hook 'lisp-interaction-mode-hook 'enable-paredit-mode)
-  (add-hook 'scheme-mode-hook           'enable-paredit-mode)
-  (add-hook 'inferior-scheme-mode-hook  'enable-paredit-mode)
-  (with-eval-after-load-feature 'paredit
-    (define-key paredit-mode-map (kbd "<C-backspace>") 'paredit-backward-kill-word)))
+(leaf paredit
+  :ensure t
+  :hook (emacs-lisp-mode-hook
+         lisp-interaction-mode-hook
+         eval-expression-minibuffer-setup-hook
+         lisp-mode-hook)
+  :bind (("<C-backspace>" . paredit-backward-kill-word)))
 
-(el-get-bundle yasnippet
-  (require 'yasnippet)
-  (setq yas-snippet-dirs
-	'("~/.emacs.d/snippets"                 ;; personal snippets
-	  "~/.emacs.d/el-get/yasnippet/snippets"         ;; the default collection
-	  ))
-  (define-key yas-keymap (kbd "<tab>") nil)
-  (yas-global-mode 1))
+(leaf ido
+  :defvar ido-enable-flex-matching
+  :config
+  (ido-mode 1)
+  (setq ido-enable-flex-matching t)
+  (leaf ido-completing-read+
+    :ensure t
+    :config
+    (ido-ubiquitous-mode 1))
+  (leaf amx
+    :ensure t
+    :config
+    (amx-mode 1))
+  (leaf ido-yes-or-no
+    :ensure t
+    :config
+    (ido-yes-or-no-mode 1))
+  (leaf crm-custom
+    :ensure t
+    :config
+    (crm-custom-mode 1))
+  (leaf ido-vertical-mode
+    :doc "Makes ido-mode display vertically"
+    :req "emacs-24.4"
+    :tag "convenience" "emacs>=24.4"
+    :url "https://github.com/creichert/ido-vertical-mode.el"
+    :added "2022-02-12"
+    :emacs>= 24.4
+    :ensure t
+    :defvar ido-vertical-define-keys
+    :config
+    (ido-vertical-mode 1)
+    (setq ido-vertical-define-keys 'C-n-and-C-p-only)))
 
-(el-get-bundle company
-  (require 'company)
-  (require 'company-dabbrev)
+(leaf magit
+  :doc "A Git porcelain inside Emacs."
+  :req "emacs-25.1" "dash-20210826" "git-commit-20211004" "magit-section-20211004" "transient-20210920" "with-editor-20211001"
+  :tag "vc" "tools" "git" "emacs>=25.1"
+  :url "https://github.com/magit/magit"
+  :added "2022-02-12"
+  :emacs>= 25.1
+  :ensure t
+  :bind (("C-x g" . magit-status))
+  :after ido
+  :defvar magit-completing-read-function
+  :config
+  (setq magit-completing-read-function 'magit-ido-completing-read))
+
+(leaf anzu
+  :doc "Show number of matches in mode-line while searching"
+  :req "emacs-25.1"
+  :tag "emacs>=25.1"
+  :url "https://github.com/emacsorphanage/anzu"
+  :added "2022-02-12"
+  :emacs>= 25.1
+  :ensure t
+  :custom
+  ((anzu-mode-lighter . "")
+   (anzu-deactivate-region . t)
+   (anzu-search-threshold . 1000)
+   (anzu-replace-threshold . 50)
+   (anzu-replace-to-string-separator . " => "))
+  :config
+  (global-anzu-mode +1)
+  (define-key isearch-mode-map [remap isearch-query-replace] 'anzu-isearch-query-replace)
+  (define-key isearch-mode-map [remap isearch-query-replace-regexp] 'anzu-isearch-query-replace-regexp)
+  (define-key global-map (kbd "C-t") 'anzu-query-replace-regexp))
+
+(leaf skk
+  :ensure ddskk
+  :custom ((default-input-method . "japanese-skk"))
+  :defvar skk-large-jisyo skk-kuten-touten-alist
+  :config
+  (setq skk-large-jisyo "/usr/share/skk/SKK-JISYO.L")
+  (setq skk-kuten-touten-alist '(
+	(jp . ("．" . "，"))
+	(en . (". " . ", "))
+        ))
+  (setq-default skk-kutouten-type 'en)
+  (leaf ddskk-posframe
+    :ensure t
+    :global-minor-mode t))
+
+(leaf company
+  :doc "Modular text completion framework"
+  :req "emacs-25.1"
+  :tag "matching" "convenience" "abbrev" "emacs>=25.1"
+  :url "http://company-mode.github.io/"
+  :added "2022-02-12"
+  :emacs>= 25.1
+  :ensure t
+  :config
+  (leaf company-posframe
+      :doc "Use a posframe as company candidate menu"
+      :ensure t
+      :after company
+      :custom ((company-posframe-mode . t))))
+
+(leaf yasnippet
+  :ensure t
+  :init (yas-global-mode 1)
+  :custom
+  (yas-snippet-dirs . '("~/.emacs.d/snippets"))
+  :config
+  (leaf yasnippet-snippets
+    :doc "Collection of yasnippet snippets"
+    :req "yasnippet-0.8.0"
+    :tag "snippets"
+    :url "https://github.com/AndreaCrotti/yasnippet-snippets"
+    :added "2022-02-12"
+    :ensure t
+    :after yasnippet))
+
+(leaf company
+  :ensure t
+  :custom ((company-dabbrev-downcase . nil)
+           (company-dabbrev-ignore-case . nil)
+           (company-idle-delay . 0)
+           (company-selection-wrap-around . t))
+  :defvar company-backends company-active-map
+  :defun company-mode/backend-with-yas
+  :config
   (global-company-mode +1)
-  (setq-default company-dabbrev-downcase nil)
-  ;;https://github.com/company-mode/company-mode/issues/413
-  (setq-default company-dabbrev-ignore-case nil)
-  (set-face-attribute 'company-tooltip nil
-		      :foreground "black" :background "lightgrey")
-  (set-face-attribute 'company-tooltip-common nil
-		      :foreground "black" :background "lightgrey")
-  (set-face-attribute 'company-tooltip-common-selection nil
-		      :foreground "white" :background "steelblue")
-  (set-face-attribute 'company-tooltip-selection nil
-		      :foreground "black" :background "steelblue")
-  (set-face-attribute 'company-preview-common nil
-		      :background nil :foreground "lightgrey" :underline t)
-  (set-face-attribute 'company-scrollbar-fg nil
-		      :background "orange")
-  (set-face-attribute 'company-scrollbar-bg nil
-		      :background "gray40")
-
-  (global-set-key (kbd "C-M-i") 'company-complete)
-
-  (define-key company-active-map (kbd "C-n") 'company-select-next)
-  (define-key company-active-map (kbd "C-p") 'company-select-previous)
-  (define-key company-search-map (kbd "C-n") 'company-select-next)
-  (define-key company-search-map (kbd "C-p") 'company-select-previous)
-  (define-key company-active-map (kbd "TAB") 'company-select-next)
-  (define-key company-search-map (kbd "TAB") 'company-select-next)
-
-  (define-key company-active-map (kbd "C-s") 'company-filter-candidates)
-
-  (define-key company-active-map (kbd "C-i") 'company-complete-selection)
-
-  (define-key emacs-lisp-mode-map (kbd "C-M-i") 'company-complete)
-
-  (setq company-idle-delay 0)
-  (defun check-expansion ()
-    (save-excursion
-      (if (looking-at "\\_>") t
-	(backward-char 1)
-	(if (looking-at "\\.") t
-	  (backward-char 1)
-	  (if (looking-at "->") t nil)))))
-
-  (defun do-yas-expand ()
-    (let ((yas-fallback-behavior 'return-nil))
-      (yas-expand)))
-
-  (defun tab-indent-or-complete ()
-    (interactive)
-    (if (minibufferp)
-	(minibuffer-complete)
-      (if (or (not yas-minor-mode)
-	      (null (do-yas-expand)))
-	  (if (check-expansion)
-	      (company-complete-common)
-	    (indent-for-tab-command)))))
-
-  (setq company-selection-wrap-around t)
-
-  (global-set-key (kbd "TAB") 'tab-indent-or-complete)
   (setq company-backends
         '(company-bbdb
-          company-nxml
-          company-css
-          company-eclim
           company-semantic
-                                        ;        company-clang
-          company-xcode
           company-cmake
           company-capf
-          (company-dabbrev-code company-gtags company-etags company-keywords)
-          company-oddmuse company-files company-dabbrev)
-        ))
+          company-clang
+          company-files
+          (company-yasnippet company-dabbrev-code company-gtags company-etags company-keywords)
+          company-oddmuse
+          company-dabbrev))
+  (define-key company-active-map [tab] 'company-select-next)
+  (defvar company-mode/enable-yas t
+    "Enable yasnippet for all backends.")
+  (defun company-mode/backend-with-yas (backend)
+    (if (or (not company-mode/enable-yas) (and (listp backend) (member 'company-yasnippet backend)))
+        backend
+      (append (if (consp backend) backend (list backend))
+              '(:with company-yasnippet))))
+  (setq company-backends (mapcar #'company-mode/backend-with-yas company-backends))
+  (leaf company-statistics
+    :ensure t
+    :hook (after-init-hook)
+    :defvar company-transformers
+    :config
+    (setq company-transformers '(company-sort-by-statistics company-sort-by-backend-importance))))
 
-
-
-(el-get-bundle company-statistics
-  (require 'company-statistics)
-  (add-hook 'after-init-hook 'company-statistics-mode)
-  (setq company-transformers '(company-sort-by-statistics company-sort-by-backend-importance)))
-
-;; company-quickhelp and its dependency
-(el-get-bundle pos-tip)
-
-(el-get-bundle company-quickhelp
-  (require 'pos-tip)
-  (setq pos-tip-foreground-color "white")
-  (setq pos-tip-background-color "steelblue")
-  (with-eval-after-load-feature 'company
-    (company-quickhelp-mode 1))
-  (with-eval-after-load-feature 'company-quickhelp
-    (setq company-quickhelp-delay 0.5)
-    (setq company-quickhelp-max-lines 10)))
-
-(el-get-bundle rainbow-delimiters
-  (require 'rainbow-delimiters)
+(leaf rainbow-delimiters
+  :doc "Highlight brackets according to their depth"
+  :tag "tools" "lisp" "convenience" "faces"
+  :url "https://github.com/Fanael/rainbow-delimiters"
+  :added "2022-02-12"
+  :ensure t
+  :hook (prog-mode-hook)
+  :defvar rainbow-delimiters-max-face-count
+  :defun color-saturate-name
+  :config
   (require 'color)
-  (add-hook 'prog-mode-hook 'rainbow-delimiters-mode)
   (defun rainbow-delimiters-using-stronger-colors ()
     (interactive)
     (cl-loop
@@ -180,254 +277,189 @@
        (cl-callf color-saturate-name (face-foreground face) 30))))
   (add-hook 'emacs-startup-hook 'rainbow-delimiters-using-stronger-colors))
 
+(leaf glsl-mode
+  :doc "major mode for Open GLSL shader files"
+  :tag "vulkan" "spir-v" "gpu" "opengl" "languages"
+  :url "https://github.com/jimhourihan/glsl-mode"
+  :added "2022-02-12"
+  :ensure t
+  :defvar c-basic-offset
+  :config
+  (setq indent-tabs-mode nil)
+  (setq c-basic-offset 4))
 
-(el-get-bundle anzu
-  (require 'anzu)
-  (global-anzu-mode +1)
-  (custom-set-variables
-   '(anzu-mode-lighter "")
-   '(anzu-deactivate-region t)
-   '(anzu-search-threshold 1000)
-   '(anzu-replace-threshold 50)
-   '(anzu-replace-to-string-separator " => "))
-  (define-key isearch-mode-map [remap isearch-query-replace] 'anzu-isearch-query-replace)
-  (define-key isearch-mode-map [remap isearch-query-replace-regexp] 'anzu-isearch-query-replace-regexp)
-  (define-key global-map (kbd "C-t") 'anzu-query-replace-regexp))
+(leaf undo-tree
+  :doc "Treat undo history as a tree"
+  :tag "tree" "history" "redo" "undo" "files" "convenience"
+  :url "http://www.dr-qubit.org/emacs.php"
+  :added "2022-02-12"
+  :ensure t
+  :bind (("M-/" . undo-tree-redo))
+  :config
+  (global-undo-tree-mode t))
 
+(leaf electric-pair-mode
+  :hook (js-mode-hook c++-mode-hook ))
 
-;; ido
-(ido-mode 1)
-(ido-everywhere 1)
-(setq ido-enable-flex-matching t)
+(leaf subword-mode
+  :hook (js-mode-hook c++-mode-hook))
 
-(el-get-bundle smex
-  (require 'smex)
-  (global-set-key (kbd "M-x") 'smex)
-  (global-set-key (kbd "M-X") 'smex-major-mode-commands))
+(leaf vue-mode
+  :doc "Major mode for vue component based on mmm-mode"
+  :req "mmm-mode-0.5.5" "vue-html-mode-0.2" "ssass-mode-0.2" "edit-indirect-0.1.4"
+  :tag "languages"
+  :added "2022-02-12"
+  :ensure t
+  :config
+  (add-hook 'vue-mode-hook #'lsp-deferred)
+  )
 
-(el-get-bundle ido-ubiquitous
-  (require 'ido-ubiquitous)
-  (ido-ubiquitous-mode 1))
-(el-get-bundle ido-vertical-mode
-  (require 'ido-vertical-mode)
-  (ido-vertical-mode 1)
-  (setq ido-vertical-define-keys 'C-n-and-C-p-only))
+(leaf web-mode
+  :doc "major mode for editing web templates"
+  :req "emacs-23.1"
+  :tag "languages" "emacs>=23.1"
+  :url "https://web-mode.org"
+  :added "2022-02-12"
+  :emacs>= 23.1
+  :ensure t
+  :config
+  (add-to-list 'auto-mode-alist '("\\.html" . web-mode)))
 
+;; (leaf tern
+;;   :doc "Tern-powered JavaScript integration"
+;;   :req "json-1.2" "cl-lib-0.5" "emacs-24"
+;;   :tag "emacs>=24"
+;;   :url "http://ternjs.net/"
+;;   :added "2022-02-12"
+;;   :emacs>= 24
+;;   :ensure t
+;;   :config
+;;   (add-hook 'js-mode-hook (lambda () (tern-mode t)))
+;;   (add-to-list 'company-backends 'company-tern))
 
-(el-get-bundle glsl-mode
-  (autoload 'glsl-mode "glsl-mode" nil t))
+(leaf js2-mode
+  :doc "Improved JavaScript editing mode"
+  :req "emacs-24.1" "cl-lib-0.5"
+  :tag "javascript" "languages" "emacs>=24.1"
+  :url "https://github.com/mooz/js2-mode/"
+  :added "2022-02-12"
+  :emacs>= 24.1
+  :ensure t
+  :custom ((js2-mode-show-parse-errors . nil)
+           (js2-mode-show-strict-warnings . nil)
+           (js2-idle-timer-delay . 0.5)
+           ;(company-tern-meta-as-single-line . t)
+           ;(company-tern-property-marker . " <p>")
+           )
+  :config
+  (add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode))
+                                        ;(add-hook 'js2-mode-hook (lambda () (tern-mode t)))
+  (add-hook 'js2-mode-hook #'lsp-deferred)
+  )
 
-(el-get-bundle web-mode
-  (autoload 'web-mode "web-mode" nil t)
-  (add-to-list 'auto-mode-alist '("\\.html" . web-mode))
-  (with-eval-after-load-feature 'web-mode
-    (add-hook 'web-mode-hook 'electric-pair-mode)))
+(leaf flycheck
+  :doc "On-the-fly syntax checking"
+  :req "dash-2.12.1" "pkg-info-0.4" "let-alist-1.0.4" "seq-1.11" "emacs-24.3"
+  :tag "tools" "languages" "convenience" "emacs>=24.3"
+  :url "http://www.flycheck.org"
+  :added "2022-02-12"
+  :emacs>= 24.3
+  :ensure t
+  :defun my/use-eslint-from-node-modules
+  :defvar flycheck-disabled-checkers flycheck-gcc-language-standard
+  :config
+  (add-hook 'after-init-hook #'global-flycheck-mode)
+  ;; flycheck setting for eslint
+  ;; http://codewinds.com/blog/2015-04-02-emacs-flycheck-eslint-jsx.html
+  ;; http://codewinds.com/blog/2015-04-02-emacs-flycheck-eslint-jsx.html#configuring_emacs
+  (setf flycheck-disabled-checkers
+        '(javascript-jshint json-jsonlint))
+  ;; customize flycheck temp file prefix
+  (setq-default flycheck-temp-prefix ".flycheck")
+  ;; use local eslint from node_modules before global
+  ;; http://emacs.stackexchange.com/questions/21205/flycheck-with-file-relative-eslint-executable
+  (defun my/use-eslint-from-node-modules ()
+    (let* ((root (locate-dominating-file
+                  (or (buffer-file-name) default-directory)
+                  "node_modules"))
+           (eslint (and root
+                        (expand-file-name "node_modules/eslint/bin/eslint.js"
+                                          root))))
+      (when (and eslint (file-executable-p eslint))
+        (setq-local flycheck-javascript-eslint-executable eslint))))
+  (add-hook 'flycheck-mode-hook #'my/use-eslint-from-node-modules)
+  (add-hook 'c++-mode-hook (lambda () (setq flycheck-gcc-language-standard "c++11"))))
 
-;; javascript-mode
-(add-hook 'js-mode-hook 'electric-pair-mode)
-(add-hook 'js-mode-hook 'subword-mode)
+(leaf slime
+  :doc "Superior Lisp Interaction Mode for Emacs"
+  :req "cl-lib-0.5" "macrostep-0.9"
+  :tag "slime" "lisp" "languages"
+  :url "https://github.com/slime/slime"
+  :added "2022-02-12"
+  :ensure t
+  :defvar slime-lisp-implementations slime-default-lisp slime-repl-mode-map paredit-backward-delete-key
+  :config
+  (setf slime-lisp-implementations
+      `((sbcl    ("sbcl" "--dynamic-space-size" "2000"))
+        (roswell ("ros" "-Q" "run"))))
+  (setf slime-default-lisp 'roswell)
+  (defun override-slime-repl-bindings-with-paredit ()
+    (define-key slime-repl-mode-map
+      (read-kbd-macro paredit-backward-delete-key) nil))
+  (add-hook 'slime-repl-mode-hook 'override-slime-repl-bindings-with-paredit)
+  (add-hook 'slime-repl-mode-hook 'enable-paredit-mode)
+  (add-to-list 'auto-mode-alist '("\\.ros" . lisp-mode))
+  (leaf slime-company
+    :doc "slime completion backend for company mode"
+    :req "emacs-24.4" "slime-2.13" "company-0.9.0"
+    :tag "abbrev" "lisp" "convenience" "emacs>=24.4"
+    :added "2022-02-12"
+    :emacs>= 24.4
+    :ensure t
+    :config
+    (setq slime-contribs '(slime-repl slime-fancy slime-banner slime-company))))
 
-(el-get-bundle slime-company)
-(el-get-bundle slime)
+(leaf lsp-mode
+  :doc "LSP mode"
+  :req "emacs-26.1" "dash-2.18.0" "f-0.20.0" "ht-2.3" "spinner-1.7.3" "markdown-mode-2.3" "lv-0"
+  :tag "languages" "emacs>=26.1"
+  :url "https://github.com/emacs-lsp/lsp-mode"
+  :added "2022-11-20"
+  :emacs>= 26.1
+  :ensure t
+  :after spinner markdown-mode lv
+  :defvar lsp-keymap-prefix lsp-mode-map lsp-command-map
+  :hook (js2-mode . lsp-deferred)
+  :config
+  (define-key lsp-mode-map (kbd "C-c l") lsp-command-map)
+  (setq gc-cons-threshold 100000000)
+  (setq read-process-output-max (* 1024 1024)) ;; 1mb
 
-(require 'slime)
-(setq slime-contribs '(slime-repl slime-fancy slime-banner slime-company))
-(setf slime-lisp-implementations
-      `((ccl64    ("wx86cl64"))
-        (sbcl    ("sbcl" "--dynamic-space-size" "2000"))
-        (roswell ("ros" "dynamic-space-size=2000" "-Q" "-l" "~/.sbclrc" "run"))))
-(setf slime-default-lisp 'roswell)
-;; Stop SLIME's REPL from grabbing DEL,
-;; which is annoying when backspacing over a '('
-(defun override-slime-repl-bindings-with-paredit ()
-  (define-key slime-repl-mode-map
-    (read-kbd-macro paredit-backward-delete-key) nil))
-(add-hook 'slime-repl-mode-hook 'override-slime-repl-bindings-with-paredit)
-(add-hook 'slime-repl-mode-hook 'enable-paredit-mode)
+  (leaf lsp-ui
+    :doc "UI modules for lsp-mode"
+    :req "emacs-26.1" "dash-2.18.0" "lsp-mode-6.0" "markdown-mode-2.3"
+    :tag "tools" "languages" "emacs>=26.1"
+    :url "https://github.com/emacs-lsp/lsp-ui"
+    :added "2022-11-20"
+    :emacs>= 26.1
+    :ensure t
+    :after lsp-mode markdown-mode
+    :commands lsp-ui-mode)
+  (leaf lsp-treemacs
+    :doc "LSP treemacs"
+    :req "emacs-26.1" "dash-2.18.0" "f-0.20.0" "ht-2.0" "treemacs-2.5" "lsp-mode-6.0"
+    :tag "languages" "emacs>=26.1"
+    :url "https://github.com/emacs-lsp/lsp-treemacs"
+    :added "2022-11-20"
+    :emacs>= 26.1
+    :ensure t
+    :after treemacs lsp-mode)
+  )
 
+(provide 'init)
 
-(el-get-bundle undo-tree
-  (require 'undo-tree)
-  (global-undo-tree-mode t)
-  (global-set-key (kbd "M-/") 'undo-tree-redo))
+;; Local Variables:
+;; indent-tabs-mode: nil
+;; End:
 
-(el-get-bundle latex-math-preview
-  (require 'latex-math-preview)
-  (setq-default latex-math-preview-in-math-mode-p-func 'YaTeX-in-math-mode-p))
-
-(el-get-bundle yatex
-  (autoload 'yatex-mode "yatex" "Yet Another LaTeX mode" t)
-  (add-to-list 'auto-mode-alist '("\\.tex" . yatex-mode))
-  (with-eval-after-load 'yatex-mode
-    (setq tex-command "uplatex")
-    (add-hook 'yatex-mode-hook 'turn-on-reftex)
-    (setq-default dviprint-command-format "dvipdfmx %s ")
-    (setq-default dvi2-command "evince")
-    (setq-default tex-pdfview-command "evince")
-    (YaTeX-define-key "p" 'latex-math-preview-expression)
-    (YaTeX-define-key "\C-p" 'latex-math-preview-save-image-file)
-    (YaTeX-define-key "j" 'latex-math-preview-insert-symbol)
-    (YaTeX-define-key "\C-j" 'latex-math-preview-last-symbol-again)
-    (YaTeX-define-key "\C-b" 'latex-math-preview-beamer-frame)))
-(setq bibtex-command "biber --bblencoding=utf8 -u -U --output_safechars")
-
-
-(add-hook 'yatex-mode-hook
-          '(lambda ()
-             (skk-auto-fill-activate)))
-
-(el-get-bundle popwin
-  (require 'popwin)
-  (setq-default popwin-mode t)
-  (push '("*YaTeX-bibtex*") popwin:special-display-config)
-  (push '("*YaTeX-typesetting*") popwin:special-display-config)
-  (push '("*latex-math-preview-expression*") popwin:special-display-config)
-  (push '("*dvi-preview*") popwin:special-display-config))
-
-
-(setq-default buffer-file-coding-system 'utf-8-unix)
-(setq-default default-file-name-coding-system 'utf-8-unix)
-(setq-default c-basic-offset 4)
-(setq-default intent-tabs-mode nil)
-(setq-default tab-width 4)
-
-(add-hook 'c++-mode-hook
-          '(lambda()
-             (c-set-style "stroustrup")
-             (c-set-offset 'innamespace 0)
-             (c-set-offset 'arglist-close 0)
-             ))
-(add-hook 'opencl-mode-hook
-          '(lambda ()
-             (c-set-style "stroustrup")
-             (c-set-offset 'innamespace 0)
-             (c-set-offset 'arglist-close 0)))
-
-(autoload 'c++ "c++-mode" nil t)
-(add-hook 'c++-mode-hook 'subword-mode)
-(add-hook 'c++-mode-hook 'electric-pair-mode)
-(setq company-clang-executable "clang-3.5")
-(add-to-list 'auto-mode-alist '("\\.h\\'" . c++-mode))
-
-(el-get-bundle opencl-mode
-  (autoload 'opencl-mode "opencl-mode" nil t)
-  (add-to-list 'auto-mode-alist '("\\.cl\\'" . opencl-mode)))
-
-(el-get-bundle markdown-mode
-  (add-to-list 'auto-mode-alist '("\\.md\\'" . gfm-mode)
-  (with-eval-after-load-feature 'markdown-mode
-    (autoload 'markdown-mode "markdown-mode" "Major mode for editing Markdown files" t)
-    (autoload 'gfm-mode "gfm-mode" "Major mode for editing GitHub Flavored Markdown files" t)
-    (setq markdown-command "pandoc -f markdown_github -t html5 --mathjax"))))
-
-
-(el-get-bundle ddskk
-  (require 'skk)
-  (require 'skk-study)
-  (setq default-input-method "japanese-skk")
-  (global-set-key (kbd "C-x j") 'skk-auto-fill-mode)
-  (setq skk-henkan-strict-okuri-precedence t)
-  (setq skk-check-okurigana-on-touroku t)
-  (setq skk-show-inline nil)
-  (setq skk-show-tooltip nil)
-  (setq skk-show-candidates-always-pop-to-buffer t)
-  (setq skk-show-annotation t)
-  (setq skk-annotation-delay 0.5)
-  (setq skk-dcomp-activate t)
-  (setq skk-henkan-show-candidates-rows 2)
-  (setq skk-dcomp-multiple-activate t)
-  (setq skk-dcomp-multiple-rows 10)
-  (setq skk-show-japanese-menu nil)
-  (setq skk-japanese-message-and-error nil)
-  (setq YaTeX-kanji-code nil)
-  (setq skk-large-jisyo "/usr/share/skk/SKK-JISYO.L")
-  (setq skk-tut-file "~/.emacs.d/el-get/ddskk/etc/SKK.tut")
-  (setq skk-kuten-touten-alist
-        (cons '(my-en ". " . ", ")
-              skk-kuten-touten-alist))
-  (setq-default skk-kutouten-type 'my-en))
-(set-fontset-font t 'japanese-jisx0208 (font-spec :family "MeiryoKe_Console"))
-
-;; ------------------
-;; package
-
-(require 'package)
-(add-to-list 'package-archives
-             '("melpa" . "https://melpa.org/packages/") t)
-(add-to-list 'package-archives
-             '("melpa-stable" . "https://stable.melpa.org/packages/") t)
-(package-initialize)
-
-(unless (require 'magit nil 'noerror)
-  (package-install 'dash)
-  (package-install 'with-editor)
-  (package-install 'git-commit)
-  (package-install 'magit))
-(require 'magit)
-(global-set-key (kbd "C-x g") 'magit-status)
-
-(unless (require 'cider nil 'noerror)
-  (package-install 'cider))
-(autoload 'cider "cider" nil t)
-(add-hook 'cider-mode-hook  'enable-paredit-mode)
-(add-hook 'cider-repl-mode-hook  'enable-paredit-mode)
-(setq nrepl-log-messages t
-      cider-repl-display-in-current-window t
-      cider-repl-use-clojure-font-lock t
-      cider-prompt-save-file-on-load 'always-save
-      cider-font-lock-dynamically '(macro core function var)
-      cider-overlays-use-font-lock t)
-(cider-repl-toggle-pretty-printing)
-(setq cider-cljs-lein-repl
-      "(do (require 'figwheel-sidecar.repl-api)
-           (figwheel-sidecar.repl-api/start-figwheel!)
-           (figwheel-sidecar.repl-api/cljs-repl))")
-
-(unless (require 'clj-refactor nil 'noerror)
-  (package-install 'clj-refactor))
-(add-hook 'cider-mode-hook 'clj-refactor-mode)
-
-;;; Stefan Monnier <foo at acm.org>. It is the opposite of fill-paragraph
-;;; https://www.emacswiki.org/emacs/UnfillParagraph
-(defun unfill-paragraph (&optional region)
-  "Takes a multi-line paragraph and makes it into a single line of text."
-  (interactive (progn (barf-if-buffer-read-only) '(t)))
-  (let ((fill-column (point-max))
-        ;; This would override `fill-column' if it's an integer.
-        (emacs-lisp-docstring-fill-column t))
-    (fill-paragraph nil region)))
-
-;;; https://www.emacswiki.org/emacs/UnfillRegion
-(defun unfill-region (beg end)
-  "Unfill the region, joining text paragraphs into a single
-    logical line.  This is useful, e.g., for use with
-    `visual-line-mode'."
-  (interactive "*r")
-  (let ((fill-column (point-max)))
-    (fill-region beg end)))
-
-;; color http://www.clear-code.com/blog/2012/4/3.html
-(defun diff-mode-setup-faces ()
-  (set-face-attribute 'diff-added nil
-                      :foreground "white" :background "dark green")
-  (set-face-attribute 'diff-removed nil
-                      :foreground "white" :background "dark red")
-  (set-face-attribute 'diff-refine-change nil
-                      :foreground nil :background nil
-                      :weight 'bold :inverse-video t))
-
-(defun diff-mode-refine-automatically ()
-  (diff-auto-refine-mode t))
-(add-hook 'diff-mode-hook 'diff-mode-refine-automatically)
-
-(setq magit-diff-refine-hunk 'all)
-
-(unless (require 'graphviz-dot-mode nil 'noerror)
-  (package-install 'graphviz-dot-mode))
-
-(require 'graphviz-dot-mode)
-(add-to-list 'auto-mode-alist '("\\.dot" . graphviz-dot-mode))
-(add-hook 'graphviz-dot-mode-hook (lambda () (local-set-key [f5] "\C-x\C-s\C-cc\C-m\C-cp")))
-
-(require 'popwin-yatex)
-
+;;; init.el ends here
