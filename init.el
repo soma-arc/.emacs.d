@@ -154,7 +154,10 @@
   :after ido
   :defvar magit-completing-read-function
   :config
-  (setq magit-completing-read-function 'magit-ido-completing-read))
+  (setq magit-completing-read-function 'magit-ido-completing-read)
+  (add-hook 'git-commit-mode-hook
+            '(lambda ()
+               (set-buffer-file-coding-system 'utf-8))))
 
 (leaf anzu
   :doc "Show number of matches in mode-line while searching"
