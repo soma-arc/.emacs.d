@@ -6,17 +6,12 @@
 
 ;;; Code:
 
-(eval-and-compile
-  (when (or load-file-name byte-compile-current-file)
-    (setq user-emacs-directory
-          (expand-file-name
-           (file-name-directory (or load-file-name byte-compile-current-file))))))
-
+;; <leaf-install-code>
 (eval-and-compile
   (customize-set-variable
-   'package-archives '(("org"   . "https://orgmode.org/elpa/")
+   'package-archives '(("org" . "https://orgmode.org/elpa/")
                        ("melpa" . "https://melpa.org/packages/")
-                       ("gnu"   . "https://elpa.gnu.org/packages/")))
+                       ("gnu" . "https://elpa.gnu.org/packages/")))
   (package-initialize)
   (unless (package-installed-p 'leaf)
     (package-refresh-contents)
@@ -33,6 +28,7 @@
     :config
     ;; initialize leaf-keywords.el
     (leaf-keywords-init)))
+;; </leaf-install-code>
 
 (leaf twilight-anti-bright-theme
   :doc "A soothing Emacs 24 light-on-dark theme"
@@ -43,11 +39,17 @@
   :config
   (load-theme 'twilight-anti-bright t))
 
-(leaf leaf
-  :custom ((ring-bell-function . 'ignore)
-           (create-lockfiles . nil)
-           (indent-tabs-mode . nil))
+(leaf cus-start
+  :custom
+  ((ring-bell-function . 'ignore)
+   (create-lockfiles . nil)
+   (indent-tabs-mode . nil))
   :config
+  (global-display-line-numbers-mode t)
+  (custom-set-variables '(display-line-numbers-width-start t))
+  (setq-default display-line-numbers-width 4)
+
+  (setq-default line-spacing 2)
   (menu-bar-mode -1)
   (tool-bar-mode -1)
   (blink-cursor-mode -1)
@@ -65,9 +67,11 @@
   (global-set-key (kbd "C-c n") 'windmove-down)
   (global-set-key (kbd "C-c p") 'windmove-up)
   (global-set-key (kbd "C-c f") 'windmove-right)
-  (set-fontset-font t 'japanese-jisx0208 (font-spec :family "MeiryoKe_Console"))
-  ;;; Stefan Monnier <foo at acm.org>. It is the opposite of fill-paragraph
-  ;;; https://www.emacswiki.org/emacs/UnfillParagraph
+  (set-face-attribute 'default nil :family "MeiryoKe_Console")
+  (set-fontset-font nil 'ascii (font-spec :family "MeiryoKe_Console" :weight 'normal) nil 'append)
+  (set-fontset-font nil 'japanese-jisx0208 (font-spec :family "MeiryoKe_Console" :weight 'normal) nil 'append)
+;;; Stefan Monnier <foo at acm.org>. It is the opposite of fill-paragraph
+;;; https://www.emacswiki.org/emacs/UnfillParagraph
   (defun unfill-paragraph (&optional region)
     "Takes a multi-line paragraph and makes it into a single line of text."
     (interactive (progn (barf-if-buffer-read-only) '(t)))
@@ -75,7 +79,7 @@
           ;; This would override `fill-column' if it's an integer.
           (emacs-lisp-docstring-fill-column t))
       (fill-paragraph nil region)))
-  ;;; https://www.emacswiki.org/emacs/UnfillRegion
+;;; https://www.emacswiki.org/emacs/UnfillRegion
   (defun unfill-region (beg end)
     "Unfill the region, joining text paragraphs into a single
     logical line.  This is useful, e.g., for use with
@@ -89,22 +93,11 @@
     :custom ((imenu-list-size . 30)
              (imenu-list-position . 'left))))
 
-(leaf macrostep
-  :ensure t
-  :bind (("C-c e" . macrostep-expand)))
-
-(leaf linum
-  :ensure t
-  :custom
-  (linum-format . "%4d ")
-  :config
-  (global-linum-mode 1))
-
 (leaf paredit
   :ensure t
   :hook (emacs-lisp-mode-hook
          lisp-interaction-mode-hook
-         eval-expression-minibuffer-setup-hook
+         ;eval-expression-minibuffer-setup-hook
          lisp-mode-hook)
   :bind (("<C-backspace>" . paredit-backward-kill-word)))
 
@@ -348,14 +341,24 @@
   :custom ((js2-mode-show-parse-errors . nil)
            (js2-mode-show-strict-warnings . nil)
            (js2-idle-timer-delay . 0.5)
-           ;(company-tern-meta-as-single-line . t)
-           ;(company-tern-property-marker . " <p>")
            )
   :config
   (add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode))
-                                        ;(add-hook 'js2-mode-hook (lambda () (tern-mode t)))
   (add-hook 'js2-mode-hook #'lsp-deferred)
   )
+
+(leaf json-mode
+  :doc "Major mode for editing JSON files"
+  :req "json-snatcher-1.0.0" "emacs-24.4"
+  :tag "emacs>=24.4"
+  :url "https://github.com/joshwnj/json-mode"
+  :added "2024-02-17"
+  :emacs>= 24.4
+  :ensure t
+  :after json-snatcher
+  :config
+  (add-to-list 'auto-mode-alist '("\\.json\\'" . json-mode))
+  (add-hook 'json-mode-hook #'flycheck-mode))
 
 (leaf flycheck
   :doc "On-the-fly syntax checking"
@@ -458,7 +461,21 @@
 
 (provide 'init)
 
-;; Local Variables:
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(display-line-numbers-width-start t)
+ '(package-selected-packages
+   '(slime-company slime flycheck json-mode js2-mode web-mode vue-mode undo-tree glsl-mode rainbow-delimiters company-statistics yasnippet-snippets yasnippet company-posframe company ddskk-posframe ddskk anzu magit ido-vertical-mode crm-custom ido-yes-or-no amx ido-completing-read+ paredit macrostep leaf-tree leaf-convert twilight-anti-bright-theme blackout el-get hydra leaf-keywords)))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
+ ;; Local Variables:
 ;; indent-tabs-mode: nil
 ;; End:
 
